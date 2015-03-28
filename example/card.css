@@ -1,0 +1,56 @@
+.scrubbable {
+    cursor: w-resize;
+    text-decoration: underline dotted;
+}
+
+.togglable {
+    cursor: pointer;
+    text-decoration: underline dotted;
+}
+.togglable.toggled {
+    color: green;
+}
+.togglable.not-toggled {
+    color: red;
+}
+
+.scrubbable.heldDown {
+    text-decoration: underline;
+}
+
+.unselectable {
+    -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.something {
+    margin: 8px;
+    padding: 8px;
+    font-family: verdana;
+    display: inline-block;
+    background-color: white;
+    border: 1px solid rgb(128, 128, 128);
+    box-shadow: 1px 1px 3px rgb(128, 128, 128);
+    border-radius: 2px;
+    display: inline-block;
+}
+
+.manipulator {
+    text-align: center;
+}
+
+.name {
+    width: 100%;
+    font-size: .6em;
+    font-weight: bold;
+    color: gray;
+}
+
+.componentName {
+    color: lightsalmon;
+    text-align: center;
+    margin: 0;
+}

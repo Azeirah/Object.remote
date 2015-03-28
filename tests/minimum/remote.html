@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Remote</title>
+    <script src="../../objectRemote.js"></script>
+</head>
+<body>
+    <p>This is the remote client. To get this working right, have the server running first, then open this page. After that, open the client page.</p>
+    <p>What <em>should</em> happen, is the client should immediately display
+    <pre>{
+    "a": 15
+}</pre>
+
+    and this page shouldn't display any object, until the client page is opened.
+    When the client page has been opened, this page should show the same object as above.
+
+    After 1.5 seconds, this page will update the object's a value to 200, both pages should then show
+
+    <pre>{
+    "a": 200
+}</pre>
+    </p>
+
+    <h1>Here it is:</h1>
+    <script src="remote.js"></script>
+</body>
+</html>
