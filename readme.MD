@@ -37,8 +37,8 @@ Otherwise, you'll get errors on your remote.
 
 ## And how do I use it in my applications?
 
-Remote objects are nothing but mere Objects.
-
+// Conceptually, remote objects are the same as normal objects.
+// Unfortunately, because es6-proxies aren't supported in any browser but the newest Chrome, the syntax to set properties differs from normal objects.
 ```js
 // Create an object
 var circle = {
@@ -60,8 +60,6 @@ var circle = client("shapes", {
     radius: 50
 });
 
-// Unfortunately, because es6-proxies aren't supported in any browser but the newest Chrome, we need to use functions to set Object properties.
-
 // analogous to circle.radius = 25;
 circle.set("radius", 25);
 
@@ -71,4 +69,4 @@ circle.remove();
 
 The "shapes" argument is a namespace, this is to differentiate between different types of objects, so the remote can use different visualizations for different types of objects.
 
-It's important to know, that the server functions **are** not sent over the wire. Remote objects are **data only**.
+It's important to know, that the server functions are **not** sent over the wire. Remote objects are **data only**.
