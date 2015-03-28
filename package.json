@@ -1,0 +1,33 @@
+{
+  "name": "Object.remote",
+  "version": "0.0.1",
+  "description": "Interacting with JavaScript objects on a remote device or webpage",
+  "main": "remoteObjectServer.js",
+  "directories": {
+    "example": "example",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Azeirah/Object.remote.git"
+  },
+  "keywords": [
+    "object",
+    "javascript",
+    "data",
+    "visualization",
+    "data"
+  ],
+  "dependencies": {
+    "ws": "0.7.1"
+  },
+  "author": "Martijn Brekelmans",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Azeirah/Object.remote/issues"
+  },
+  "homepage": "https://github.com/Azeirah/Object.remote"
+}
