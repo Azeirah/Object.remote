@@ -37,8 +37,10 @@ Otherwise, you'll get errors on your remote.
 
 ## And how do I use it in my applications?
 
-// Conceptually, remote objects are the same as normal objects.
-// Unfortunately, because es6-proxies aren't supported in any browser but the newest Chrome, the syntax to set properties differs from normal objects.
+Conceptually, remote objects are the same as normal objects.
+
+Unfortunately, because es6-proxies aren't supported in any browser but the newest Chrome, the syntax to set properties differs from normal objects.
+
 ```js
 // Create an object
 var circle = {
