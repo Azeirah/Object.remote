@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manipulatable</title>
+    <script src="../objectRemote.js"></script>
+</head>
+<body>
+    <pre id="out"></pre>
+
+    <script>
+    var client = remoteObject.client("ws://localhost:8080");
+
+    var o = client("object", {a: 10});
+
+    setInterval(function () {
+        document.querySelector("#out").innerHTML = JSON.stringify(o, 4, null);
+    }, 1/60);
+    </script>
+</body>
+</html>

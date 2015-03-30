@@ -2,6 +2,10 @@
 
 Object.remote sends JavaScript objects over a server to any remote clients, who are then able to visualize and even interact with these components. The remote clients are allowed to send back any changes to the original client.
 
+Object.remote simply tries it best to make sure that objects on either side of the connection stay the same. This works very well.
+
+This means is that you can use an object on two or more pages at the same time, cool huh?
+
 ## Demo-time, wooh!
 
 Check out the examples for now. I don't have a remote server enabled yet.
@@ -17,7 +21,7 @@ So, what's this for? Object.remote can be used for many things, I personally tri
 5. Real-time profiling and visualization.
 6. Real-time manipulation of arbitrary objects (check out martijnbrekelmans.com/game with the remote.html in the example directory).
 
-All in all, Object.remote has a wide use-case. 
+All in all, Object.remote has a wide use-case.
 
 ## How does it work?
 
@@ -25,7 +29,7 @@ Object.remote consists of three things
 
 1. The client, this is a single page using the Object.remote JavaScript file
 2. Any number of remote client pages, we'll call these remotes, these are pages that can receive the Objects created in the client, and then visualize, manage and interact with them.
-3. The remote object server, this is a very simple websocket server that 
+3. The remote object server, this is a very simple websocket server that passes any messages it gets to all its connections, except to the one it received the message from
 
 ## And how do I get it running?
 
@@ -72,3 +76,9 @@ circle.remove();
 The "shapes" argument is a namespace, this is to differentiate between different types of objects, so the remote can use different visualizations for different types of objects.
 
 It's important to know, that the server functions are **not** sent over the wire. Remote objects are **data only**.
+
+##### Todo
+
+At the moment, some functions don't "just work". For example, a remote cannot be connected to multiple clients. Also, it's important that the remote gets connected to the server before the client does, I'd like to resolve this in the future also.
+
+Most importantly however, I need to get some great examples up and running.
