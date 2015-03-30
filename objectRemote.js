@@ -188,6 +188,13 @@ window.remoteObject = (function () {
                 var onUpdateListeners = [];
                 var onDeleteListeners = [];
 
+                // seeing my point editor demo, I'm not sure if a namespace is really necessary.
+                // it's possible to detect types using checks if certain properties exist, ex if (object.x && object.y) {...}
+                // and you could also define types in the client environment, using
+                // createRemoteObject({x: 10, y: 20, type: "point"}) or something
+                //
+                // I think it's more important for each CLIENT to have a namespace of sorts, clients should NEVER be able to interact with each other, which is currently very possible.
+
                 // create the namespace if it didn't exist before
                 if (objectContainer[objectNamespace] === undefined) {
                     objectContainer[objectNamespace] = Object.create(null);
