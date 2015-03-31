@@ -7,16 +7,19 @@
 </head>
 <body>
     <h4>This is the simplest example possible using Object.remote </h4>
-    <p>On this client, a point object gets created, this object can then be used in whatever remote... Try it out by opening up the <a href="../remotes/basic/remote.html">remote</a> or the specialized <a href="../remotes/point/remote.html">remote point editor</a>.</p>
+    <p>On this client, a point object gets created, this object can then be used in whatever remote... Try it out by opening up the <a href="../remotes/basic/remote.html">remote</a> or the specialized <a href="../remotes/point/remote.html">remote point editor</a> or even better, open both of them :)</p>
     <pre id="out"></pre>
 
     <script>
     var client = remoteObject.client("ws://localhost:8080");
 
-    var o = client("object", {x: 10, y: 50});
+    var o  = client("object", {x: 15, y: 50});
+    var o2 = client("object", {x: 50, y: 15});
+    var o3 = client("object", {x: 200, y: 200});
 
     setInterval(function () {
-        document.querySelector("#out").innerHTML = JSON.stringify(o, 4, null);
+        var strOut = JSON.stringify(o, null, 4) + "\n" + JSON.stringify(o2, null, 4) + "\n" + JSON.stringify(o3, null, 4);
+        document.querySelector("#out").innerHTML = strOut;
     }, 1/60);
     </script>
 </body>
