@@ -26,6 +26,18 @@
     user-select: none;
 }
 
+.function {
+    font-family: Helvetica;
+    font-weight: bold;
+    color: rgb(20, 140, 80);
+}
+
+.function:hover {
+    transition: all .2s;
+    color: rgb(20, 180, 70);
+    cursor: pointer;
+}
+
 .something {
     margin: 8px;
     padding: 8px;

@@ -15,8 +15,7 @@ remote.listenForCreation(function (object, namespace, id) {
                 cleanups[id]();
             });
         }, 15);
-    }
-    if (namespace === "object") {
+    } else {
         window.setTimeout(function () {
             // append a span to the output area, so react can render a card inside it
             var out = document.createElement("span");

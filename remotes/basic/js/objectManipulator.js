@@ -1,4 +1,15 @@
 (function () {
+    var AFunction = React.createClass({displayName: 'AFunction',
+        invoke: function () {
+            this.props.object.invokeFunction(this.props.name);
+        },
+        render: function () {
+            return (
+                React.createElement("span", {onClick: this.invoke, className: "function"}, this.props.name)
+            );
+        }
+    });
+
     var ANumber = React.createClass({displayName: 'ANumber',
         getInitialState: function () {
             return {
@@ -215,6 +226,16 @@
                     writable: true
                 });
 
+                if (value === "remote function") {
+                    // functions should not be identified by the typeof operator, but instead by their value of "remote function"
+                    // refer to dev docs
+                    c = AFunction({
+                        name: key,
+                        key: key,
+                        object: that.props.object,
+                    });
+                }
+
                 return (
                     c
                 );
@@ -300,9 +321,10 @@
         };
     }
 
-    makeManipulator.number  = ANumber;
-    makeManipulator.string  = AString;
-    makeManipulator.boolean = ABoolean;
+    makeManipulator.number      = ANumber;
+    makeManipulator.string      = AString;
+    makeManipulator.boolean     = ABoolean;
+    makeManipulator.function    = AFunction;
 
     window.componentManipulator = componentManipulator;
     window.objectManipulator    = makeManipulator
