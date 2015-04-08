@@ -147,7 +147,14 @@ window.remoteObject = (function() {
         // as well the object container that will be used to store new objects in
         //
         // the last argument specifies if the channel is the client channel, or if it is a remote channel, because there is a slight difference between the two.
-        var channel = new WebSocket(url);
+        var channel = {};
+        try {
+            channel = new WebSocket(url);
+        } catch (e) {
+            console.log("creating a channel went wrong, remote objects will behave like normal objects");
+            channel.send = function () {};
+            channel.readyState === 0;
+        }
         var messageQueue = isClient ? [] : undefined;
         var that = this;
 
@@ -194,7 +201,6 @@ window.remoteObject = (function() {
                 // got a message from the client to add a remote function
                 objectContainer[namespace][id][data.name] = "remote function";
             } else if (data.type === "invoke function") {
-                console.log("received invoke function message");
                 var reference = objectContainer[namespace][id][data.name];
                 if (typeof reference === "function") {
                     // we're on the client, and we got a request to invoke a function.

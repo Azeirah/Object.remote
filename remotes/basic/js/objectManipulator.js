@@ -15,7 +15,8 @@
             return {
                 value: this.props.value || 0,
                 directlyEditing: false,
-                mousedown: false
+                mousedown: false,
+                graph: undefined
             };
         },
         setValue: function (newValue) {
@@ -52,18 +53,16 @@
             this.props.object.addUpdateListener(function (key, newValue) {
                 if (key === that.props.name) {
                     that.setState({value: newValue});
+                    that.state.graph && graph.addPoint(that.state.graph, newValue);
                 }
             });
 
-            // bind the object value to this component 60 times per second, it's just polling an object really...
-            // super dirty 2-way data binding <3
-            window.addEventListener("mousedown", this.mousedown);
+            this.getDOMNode().addEventListener("mousedown", this.mousedown);
             window.addEventListener("mouseup", this.mouseup);
             window.addEventListener("mousemove", this.mousemove);
-
         },
         componentWillUnmount: function () {
-            window.removeEventListener("mousedown", this.mousedown);
+            this.getDOMNode().removeEventListener("mousedown", this.mousedown);
             window.removeEventListener("mouseup", this.mouseup);
             window.removeEventListener("mousemove", this.mousemove);
         },
@@ -76,6 +75,11 @@
 
             if (event.which === 1 && this.refs.scrubbable && event.target === this.refs.scrubbable.getDOMNode()) {
                 this.setState({mousedown: true});
+            }
+
+            // 71, g for graph
+            if (magicMousey.keys.g) {
+                this.setState({graph: graph.addSource()});
             }
         },
         mouseup: function (event) {
