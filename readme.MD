@@ -1,22 +1,34 @@
 # Object.remote
 
-Object.remote sends JavaScript objects over a server to any remote clients, who are then able to visualize and even interact with these components. The remote clients are allowed to send back any changes to the original client.
+A remote object is an ordinary object that can be viewed and altered by remote web pages, such as mobile phones, laptops, pc's and other tabs on your computer.
 
-Object.remote simply tries it best to make sure that objects on either side of the connection stay the same. This works very well.
+It can be used to develop control panels for any kind of application or game.
 
-This means is that you can use an object on two or more pages at the same time, cool huh?
+This project comes with an object editor similar to any modern browser's developer tools but with a nicer interface! I've also included plotting of arbitrary numbers.
 
+Object.remote is developed to solve some problems:
+1. Sometimes, you need to quickly prototype an interface, but you don't want to clutter whatever's already there. You can use this to build a remote interface, which will work equally well
+2. While DAT.gui is useful, it quickly becomes too large and annoying to work with when a program gets past the toy phase.
+3. Developer tools are nice to work with but they lack a bigger overview of "what objects exist" and "how do they behave".
+
+# How does Object.remote solve these problems?
+
+1. Because objects are remote by default, you can build an interface using any library you want to use. Instead of cluttering your application, it runs on a separate webpage, so your original interface remains unchanged.
+2. There is a general-purpose interface available with functionality similar to DAT.gui. Instead of running in a small dropdown at the top-right of your window, it runs as a standalone fullscreen webpage.
+3. The general-purpose interface was built around utilizing the screen space of a whole page, instead of being limited to being a part of your webpage as the console is.
 ## Demo-time, wooh!
 
-Check out the examples for now. I don't have a remote server enabled yet.
+## Examples
+
+Check out the examples for now. I don't have a remote server enabled yet..
 
 ## Applications
 
-So, what's this for? Object.remote can be used for many things, I personally tried the following things, and I'm glad it's working well :)
+So, what's this for? Object.remote can be used for many things, here are some examples. It's really a matter of creativity.
 
 1. Building remote controls for games
-2. Finding just the right value for more complex behaviors, for example, for bezier curves animations, gravity for jumping, position on a page.
-3. Debugging complex behavior
+2. It allows for building remote interfaces to edit pieces of code that don't represent their behavior in text. Imagine a bezier curve editor at run-time, so you can really feel your way into getting the right animation.
+3. It can be used as an abstraction over websockets
 4. Plotting data over time
 5. Real-time profiling and visualization.
 6. Real-time manipulation of arbitrary objects (check out martijnbrekelmans.com/game with the remote.html in the example directory).
@@ -39,46 +51,86 @@ Start server -> load up any remote pages -> open client
 
 Otherwise, you'll get errors on your remote.
 
-## And how do I use it in my applications?
+## Client api
 
 Conceptually, remote objects are the same as normal objects.
 
-Unfortunately, because es6-proxies aren't supported in any browser but the newest Chrome, the syntax to set properties differs from normal objects.
+Unfortunately, because es6-proxies aren't supported in any browser but the newest Chrome, the syntax to set properties differs from normal objects. If I could, I would use:
+```js
+circle.x = 20;
+// instead of
+circle.set("x", 20);
+```
+
+Client api:
 
 ```js
-// Create an object
-var circle = {
-    x: 10,
-    y: 10,
-    radius: 50
-};
+var remoteObjectServer = "ws://localhost:8080";
+var remote = remoteObject.client(remoteObjectServer);
 
-// To create this same object, do the following
-
-// This is needed to connect to the remote object server.
-// The first argument is needed to bond the client to the server, this call is similar to cupido, shooting an arrow of love to bond the server with the client.
-var client = remoteObject.client("ws://localhost:8080");
-
-// This client variable can be called to create objects
-var circle = client("shapes", {
+var circle = remote({
     x: 10,
     y: 10,
     radius: 50
 });
 
-// analogous to circle.radius = 25;
-circle.set("radius", 25);
+circle.set("x", 15);
+circle.set("y", 20);
 
-// There's also a deletion operator, if you need to care about memory. It's best practice, but not necessary, to use it.
+circle.x; // 15
+circle.y; // 20
+
+// you can set functions on objects. On the remote, a function can be called
+circle.setFunction("move", function (x, y) {
+    circle.set("x", x);
+    circle.set("y", y);
+});
+
+// On the remote call it like this
+circle.invokeFunction("move", [20, 50]);
+// Functions do not run on the remote, just pretend you're calling circle.move() on the client.
+
+// if you do not want to broadcast an update for whatever reason, pass a third parameter to set
+circle.set("x", 20, false);
+
+// and last and very much least, you can destroy objects
 circle.remove();
 ```
 
-The "shapes" argument is a namespace, this is to differentiate between different types of objects, so the remote can use different visualizations for different types of objects.
+## Remote api
 
-It's important to know, that the server functions are **not** sent over the wire. Remote objects are **data only**.
+This is code taken from the point example.
 
-##### Todo
+```js
+var remoteObjectServer = "ws://localhost:8080";
+var remote = remoteObject.remote(remoteObjectServer);
 
-At the moment, some functions don't "just work". For example, a remote cannot be connected to multiple clients. Also, it's important that the remote gets connected to the server before the client does, I'd like to resolve this in the future also.
+// functions that take care of the interface.
+function newPoint(object, id) {
+    ...
+}
 
-Most importantly however, I need to get some great examples up and running.
+function onPointUpdate(object, id, newValue) {
+    ...
+}
+
+function onPointDeletion(object, id) {
+    ...
+}
+
+remote.listenForCreation(function (object, id) {
+    // this timeout is necessary right now, but necessity will be removed in a later version.
+    window.setTimeout(function () {
+        console.log("new object received!");
+        // check if it's a point
+        if (object.x && object.y) {
+            newPoint(object, id);
+            object.onUpdate(onPointUpdate);
+            object.onDelete(onPointDeletion);
+        }
+    }, 15);
+});
+```
+
+## What problems does Object.remote have?
+

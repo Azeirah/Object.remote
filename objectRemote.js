@@ -264,7 +264,7 @@ window.remoteObject = (function() {
                     });
 
                     onDeleteListeners.forEach(function(listener) {
-                        listener(objectContainer[id]);
+                        listener(objectContainer[id], id);
                     });
 
                     delete objectContainer[id];

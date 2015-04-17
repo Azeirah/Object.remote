@@ -134,7 +134,7 @@ function createPoint(pointModel) {
     pointModel.onUpdate(updatePoint);
 }
 
-remote.listenForCreation(function (object, namespace, id) {
+remote.listenForCreation(function (object, id) {
     window.setTimeout(function () {
         console.log("new object received!");
         // check if it's a point
