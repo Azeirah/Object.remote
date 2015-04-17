@@ -1,16 +1,9 @@
+var port            = 8080;
 var WebSocketServer = require('ws').Server;
-var wss             = new WebSocketServer({port: 8080});
+var wss             = new WebSocketServer({port: port});
+var clients         = {};
 
-var clients = {};
-
-function decodeMessage (message) {
-    return JSON.parse(message);
-}
-
-function sendJSON (client, message) {
-    var data = JSON.stringify(message);
-    client.send(data);
-}
+console.log("starting up a remote object server @port " + port + ".");
 
 function broadcast (message, ch) {
     console.log("broadcasting", message);

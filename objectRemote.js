@@ -1,3 +1,11 @@
+// function useful for debugging.
+function assert (condition, message) {
+    var errorMessage = message? "Assertion error: " + message : "Assertion error.";
+    if (!condition) {
+        throw new Error(errorMessage);
+    }
+}
+
 (function () {
     // this code was taken from Douglas Crockford's Cycle.js
     if (typeof JSON.decycle !== 'function') {
@@ -97,20 +105,20 @@
 window.remoteObject = (function() {
     "use strict";
     var remoteObject = {};
-    var currentId = 0;
+    var currentId    = 0;
 
     function deepSet(obj, path, value) {
-        // stolen from a stackoverflow post
+        // taken from a stackoverflow post
         // it takes an object, a path and a value, it will assign value to the path inside the object
         // deepSet({nested: {deeper: {value: 10}}}, "nested.deeper", 15);
         var elem;
         var i;
-        var schema = obj; // a moving reference to internal objects within obj
-        var pList = path.split('.');
-        var size = pList.length - 1;
+        var schema       = obj; // a moving reference to internal objects within obj
+        var propertyList = path.split('.');
+        var size         = propertyList.length - 1;
 
         for (i = 0; i < size; i += 1) {
-            elem = pList[i];
+            elem = propertyList[i];
 
             if (!schema[elem]) {
                 schema[elem] = {};
@@ -119,7 +127,7 @@ window.remoteObject = (function() {
             schema = schema[elem];
         }
 
-        schema[pList[size]] = value;
+        schema[propertyList[size]] = value;
     }
 
     function deepGet(obj, path) {
@@ -147,7 +155,10 @@ window.remoteObject = (function() {
         // as well the object container that will be used to store new objects in
         //
         // the last argument specifies if the channel is the client channel, or if it is a remote channel, because there is a slight difference between the two.
-        var channel = {};
+        var channel      = {};
+        var messageQueue = isClient? [] : undefined;
+        var that         = this;
+
         try {
             channel = new WebSocket(url);
         } catch (e) {
@@ -155,8 +166,6 @@ window.remoteObject = (function() {
             channel.send = function () {};
             channel.readyState === 0;
         }
-        var messageQueue = isClient ? [] : undefined;
-        var that = this;
 
         this.sendMessage = function(message) {
             // if the channel isn't ready yet, queue the message so it can be sent when it is connected
@@ -180,38 +189,33 @@ window.remoteObject = (function() {
             var newObject;
             var data = JSON.parse(message.data);
             var id = data.id;
-            var namespace = data.namespace;
 
             if (data.type === "new object") {
-                if (objectContainer[namespace] === undefined) {
-                    objectContainer[namespace] = Object.create(null);
-                }
-
-                newObject = createRemoteObject(namespace, {}, false);
+                newObject = createRemoteObject({}, false);
 
                 creationListeners.forEach(function(creationListener) {
-                    creationListener(newObject, namespace, id);
+                    creationListener(newObject, id);
                 });
             } else if (data.type === "deleted object") {
-                objectContainer[namespace][id].remove();
-                delete objectContainer[namespace][id];
+                objectContainer[id].remove();
+                delete objectContainer[id];
             } else if (data.type === "updated object") {
-                objectContainer[namespace][id].set(data.key, data.value, false);
+                objectContainer[id].set(data.key, data.value, false);
             } else if (data.type === "add function") {
                 // got a message from the client to add a remote function
-                objectContainer[namespace][id][data.name] = "remote function";
+                objectContainer[id][data.name] = "remote function";
             } else if (data.type === "invoke function") {
-                var reference = objectContainer[namespace][id][data.name];
+                var reference = objectContainer[id][data.name];
+                // we're on the remote, and we got a request to invoke a function.
+                // this situation can only happen when there is one client, and two or more remotes
+                // any remote but the remote that called remote.invokeFunction will get a message
+                // these messages should simply be ignored, since they should be handled by the client
+                // we could possibly do a callback onFunctionInvocation, so ui's can highlight whenever a function gets called or something...
+                assert(typeof reference === "function");
                 if (typeof reference === "function") {
                     // we're on the client, and we got a request to invoke a function.
                     // execute it
                     reference();
-                } else {
-                    // we're on the remote, and we got a request to invoke a function.
-                    // this situation can only happen when there is one client, and two or more remotes
-                    // any remote but the remote that called remote.invokeFunction will get a message
-                    // these messages should simply be ignored, since they should be handled by the client
-                    // we could possibly do a callback onFunctionInvocation, so ui's can highlight whenever a function gets called or something...
                 }
             }
         };
@@ -220,42 +224,29 @@ window.remoteObject = (function() {
     function createContainer(isClient) {
         return function(url) {
             var channel;
-            var objectContainer = {};
+            var objectContainer         = {};
             var objectCreationListeners = [];
 
-            function createRemoteObject(objectNamespace, initialValue, sendUpdate) {
-                var id = currentId;
-                var remote = Object.create(null);
-                var onUpdateListeners = [];
-                var onDeleteListeners = [];
+            function createRemoteObject(initialValue, sendUpdate) {
+                var id                  = currentId;
+                var remote              = Object.create(null);
+                var onUpdateListeners   = [];
+                var onDeleteListeners   = [];
                 var transitionListeners = [];
 
-                // seeing my point editor demo, I'm not sure if a namespace is really necessary.
-                // it's possible to detect types using checks if certain properties exist, ex if (object.x && object.y) {...}
-                // and you could also define types in the client environment, using
-                // createRemoteObject({x: 10, y: 20, type: "point"}) or something
-                //
-                // I think it's more important for each CLIENT to have a namespace of sorts, clients should NEVER be able to interact with each other, which is currently very possible.
-
-                // create the namespace if it didn't exist before
-                if (objectContainer[objectNamespace] === undefined) {
-                    objectContainer[objectNamespace] = Object.create(null);
-                }
-
-                objectContainer[objectNamespace][id] = remote;
+                objectContainer[id] = remote;
 
                 remote.remove = function remove() {
                     channel.sendMessage({
-                        namespace: objectNamespace,
                         type: "deleted object",
                         id: id
                     });
 
                     onDeleteListeners.forEach(function(listener) {
-                        listener(objectContainer[objectNamespace][id]);
+                        listener(objectContainer[id]);
                     });
 
-                    delete objectContainer[objectNamespace][id];
+                    delete objectContainer[id];
                 };
 
                 remote.set = function set(path, newValue, update) {
@@ -267,7 +258,6 @@ window.remoteObject = (function() {
                     // object set operation, instead of an update broadcast
                     if (update === undefined) {
                         channel.sendMessage({
-                            namespace: objectNamespace,
                             type: "updated object",
                             id: id,
                             key: path,
@@ -287,12 +277,8 @@ window.remoteObject = (function() {
                 };
 
                 remote.setFunction = function setFunction(functionName, fn) {
-                    // tells remote clients that a function "name" can be invoked remotely
-                    // parameterTypes is an array of types that the function requires
-                    // ex, remote.setFunction("print", console.log.bind(console), ["string"])
-                    // at the moment, this does NOT support objects or arrays, only numbers, strings and booleans
+                    // allows you to make clear that a function is remote-callable.
                     channel.sendMessage({
-                        namespace: objectNamespace,
                         type: "add function",
                         id: id,
                         name: functionName
@@ -319,7 +305,6 @@ window.remoteObject = (function() {
                         // functionRemote is a set-in-stone value I decided to use on remotes instead of the actual function reference, which the remote cannot possibly have.
                         // this means we're on the remote, and we can ping the client to invoke a function
                         channel.sendMessage({
-                            namespace: objectNamespace,
                             type: "invoke function",
                             id: id,
                             name: functionName,
@@ -347,7 +332,6 @@ window.remoteObject = (function() {
                 currentId += 1;
                 if (sendUpdate === undefined) {
                     channel.sendMessage({
-                        namespace: objectNamespace,
                         type: "new object",
                         id: id
                     });
@@ -363,7 +347,6 @@ window.remoteObject = (function() {
                     }
                 }
 
-
                 return remote;
             }
 
@@ -371,10 +354,6 @@ window.remoteObject = (function() {
 
             createRemoteObject.listenForCreation = function(fn) {
                 objectCreationListeners.push(fn);
-            };
-
-            createRemoteObject.retrieveNamespace = function(namespace) {
-                return objectContainer[namespace];
             };
 
             return createRemoteObject;

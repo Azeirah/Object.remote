@@ -2,9 +2,10 @@ var remote = remoteObject.remote("ws://localhost:8080");
 // hold references to cleanup functions to react elements, look in objectManipulator.js to see that component&objectManipulator return functions which are used to clean themselves up.
 var cleanups = {};
 
-remote.listenForCreation(function (object, namespace, id) {
-    if (namespace === "component") {
-        window.setTimeout(function () {
+remote.listenForCreation(function (object, id) {
+    window.setTimeout(function () {
+        // careful with this check, name is not exactly an uncommon property on an object
+        if (object.name !== undefined) {
             // append a span to the output area, so react can render a card inside it
             var out = document.createElement("span");
             document.querySelector("#output").appendChild(out);
@@ -14,20 +15,18 @@ remote.listenForCreation(function (object, namespace, id) {
                 // remove the card whenever an object gets deleted
                 cleanups[id]();
             });
-        }, 15);
-    } else {
-        window.setTimeout(function () {
+        } else {
             // append a span to the output area, so react can render a card inside it
             var out = document.createElement("span");
             document.querySelector("#output").appendChild(out);
-            cleanups[id] = objectManipulator(object, out, namespace);
+            cleanups[id] = objectManipulator(object, out, "object");
 
             object.onDelete(function () {
                 // remove the card whenever an object gets deleted
                 cleanups[id]();
             });
-        }, 15);
-    }
+        }
+    }, 15);
 });
 
 var draw = canvasWithSize(500, 500);
