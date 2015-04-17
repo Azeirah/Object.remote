@@ -12,11 +12,12 @@ The client, server and remote communicate with each other through a simple proto
 4. set function
 5. invoke function
 
-Each message takes at least these three parameters in object format.
+There's also the new connection message, when a client or remote connects, this message will be sent.
+
+Each message takes at least these two parameters in object format.
 These are:
 ```
 {
-    namespace: String,
     type: String, // one of the five abovementioned messages
     id: Number
 }
@@ -33,7 +34,7 @@ In all upcoming message formats, the fixed parameters are left out for brevity.
 This message does the same on the client as on any remote. It creates an empty object in the private "objectContainer" variable.
 
 ```
-objectContainer[namespace][id] = Object.create(null);
+objectContainer[id] = Object.create(null);
 ```
 ### deleted object
 
@@ -45,7 +46,7 @@ objectContainer[namespace][id] = Object.create(null);
 This message does the same on the client as on any remote. It removes the reference to the object in the private "objectContainer" variable.
 
 ```
-delete objectContainer[namespace][id];
+delete objectContainer[id];
 ```
 ### updated object
 
@@ -60,7 +61,7 @@ delete objectContainer[namespace][id];
 This message does the same on the client as on any remote. It sets the object's key to value.
 
 ```
-objectContainer[namespace][id][key] = value;
+objectContainer[id][key] = value;
 ```
 
 ### set function
@@ -76,11 +77,11 @@ This message differs on the client from the remote. On the client, it sets a ref
 
 So on the client
 ```
-objectContainer[namespace][id][functionName] = function functionName () {...}
+objectContainer[id][functionName] = function functionName () {...}
 ```
 While on the remote
 ```
-objectContainer[namespace][id][functionName] = "remote function"
+objectContainer[id][functionName] = "remote function"
 ```
 
 ### invoke function
@@ -96,9 +97,18 @@ This message also differs on the client from the remote. On the client, it simpl
 
 On the client
 ```
-objectContainer[namespace][id][functionName]();
+objectContainer[id][functionName]();
 ```
 On the remote
 ```
 sendMessage(invokeFunction...);
 ```
+
+### on connection
+
+```
+    type: "connection",
+    value: "client" | "server"
+```
+
+This message will be sent on initial connection. It will not be passed to any other clients, it's for the server only.

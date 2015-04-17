@@ -13,9 +13,9 @@
     <script>
     var client = remoteObject.client("ws://localhost:8080");
 
-    var o  = client("object", {x: 15, y: 50});
-    var o2 = client("object", {x: 50, y: 15});
-    var o3 = client("object", {x: 200, y: 200});
+    var o  = client({x: 15, y: 50});
+    var o2 = client({x: 50, y: 15});
+    var o3 = client({x: 200, y: 200});
 
     setInterval(function () {
         var strOut = JSON.stringify(o, null, 4) + "\n" + JSON.stringify(o2, null, 4) + "\n" + JSON.stringify(o3, null, 4);

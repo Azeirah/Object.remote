@@ -6,6 +6,10 @@ function assert (condition, message) {
     }
 }
 
+function assertDefined (value, message) {
+    assert(value !== undefined, message);
+}
+
 (function () {
     // this code was taken from Douglas Crockford's Cycle.js
     if (typeof JSON.decycle !== 'function') {
@@ -131,6 +135,7 @@ window.remoteObject = (function() {
     }
 
     function deepGet(obj, path) {
+        // a slightly modified version of the deepSet taken from stackoverflow
         var elem;
         var i;
         var schema = obj; // a moving reference to internal objects within obj
@@ -150,11 +155,15 @@ window.remoteObject = (function() {
         return schema[pList[size]];
     }
 
-    var Channel = function(url, objectContainer, isClient, createRemoteObject, creationListeners) {
+    function Channel (url, objectContainer, isClient, createRemoteObject, creationListeners) {
         // Channel requires a websocket url to connect to,
         // as well the object container that will be used to store new objects in
         //
-        // the last argument specifies if the channel is the client channel, or if it is a remote channel, because there is a slight difference between the two.
+        // isClient specifies if the channel is the client channel, or if it is a remote channel, because there is a slight difference between the two.
+        [url, objectContainer, isClient, createRemoteObject, creationListeners].forEach(function (obj) {
+            assertDefined(obj, "should exist");
+        });
+
         var channel      = {};
         var messageQueue = isClient? [] : undefined;
         var that         = this;
@@ -164,10 +173,11 @@ window.remoteObject = (function() {
         } catch (e) {
             console.log("creating a channel went wrong, remote objects will behave like normal objects");
             channel.send = function () {};
-            channel.readyState === 0;
+            assert(channel.readyState === 0, "When connection fails, readystate should be 0");
         }
 
         this.sendMessage = function(message) {
+            assertDefined(channel, "channel should exist");
             // if the channel isn't ready yet, queue the message so it can be sent when it is connected
             // otherwise just send the message
             if (isClient && channel.readyState === 0) {
@@ -179,9 +189,19 @@ window.remoteObject = (function() {
         };
 
         channel.onopen = function() {
+            assert(isClient !== undefined, "the isClient bool should be defined");
             // send all queued messages, meaning any message that was attempted to send before the channel had opened
             if (isClient) {
+                that.sendMessage({
+                    type: "on connection",
+                    value: "client"
+                });
                 messageQueue.forEach(that.sendMessage);
+            } else {
+                that.sendMessage({
+                    type: "on connection",
+                    value: "remote"
+                });
             }
         };
 
@@ -189,6 +209,7 @@ window.remoteObject = (function() {
             var newObject;
             var data = JSON.parse(message.data);
             var id = data.id;
+            var reference;
 
             if (data.type === "new object") {
                 newObject = createRemoteObject({}, false);
@@ -205,7 +226,7 @@ window.remoteObject = (function() {
                 // got a message from the client to add a remote function
                 objectContainer[id][data.name] = "remote function";
             } else if (data.type === "invoke function") {
-                var reference = objectContainer[id][data.name];
+                reference = objectContainer[id][data.name];
                 // we're on the remote, and we got a request to invoke a function.
                 // this situation can only happen when there is one client, and two or more remotes
                 // any remote but the remote that called remote.invokeFunction will get a message
@@ -253,9 +274,8 @@ window.remoteObject = (function() {
                     var oldValue = remote[path];
                     deepSet(remote, path, newValue);
 
-                    // update is a boolean used to disable sending the message to the server
-                    // this is useful for when you want to use this function as an actual
-                    // object set operation, instead of an update broadcast
+                    // if update is set to any value (including false...)
+                    // then no message will be sent to the server
                     if (update === undefined) {
                         channel.sendMessage({
                             type: "updated object",
@@ -350,6 +370,8 @@ window.remoteObject = (function() {
                 return remote;
             }
 
+            // channel really shouldn't take createRemoteObject and objectCreationListeners
+            // that really doesn't belong in its parameter list...
             channel = new Channel(url, objectContainer, isClient, createRemoteObject, objectCreationListeners);
 
             createRemoteObject.listenForCreation = function(fn) {
