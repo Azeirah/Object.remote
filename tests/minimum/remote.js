@@ -17,6 +17,6 @@ document.body.appendChild(out);
 
 setInterval(function () {
     if (receivedObject) {
-        out.innerHTML = JSON.stringify(receivedObject, null, 4);  
+        out.innerHTML = JSON.stringify(receivedObject, null, 4);
     }
-}, 1/ 60);
+}, 1/60);

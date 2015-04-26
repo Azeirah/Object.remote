@@ -2,31 +2,42 @@ var remote = remoteObject.remote("ws://localhost:8080");
 // hold references to cleanup functions to react elements, look in objectManipulator.js to see that component&objectManipulator return functions which are used to clean themselves up.
 var cleanups = {};
 
+function waitForReady(object, keys, onReady) {
+    var receivedKeys = [];
+    var timeout;
+
+    object.onUpdate(function (o, key) {
+        keys.forEach(function (thisKey) {
+            if (key === thisKey && receivedKeys.indexOf(thisKey) < 0) {
+                receivedKeys.push(thisKey);
+                if (receivedKeys.length === keys.length) {
+                    onReady(object);
+                }
+            }
+        });
+    });
+}
+
 remote.listenForCreation(function (object, id) {
-    window.setTimeout(function () {
-        // careful with this check, name is not exactly an uncommon property on an object
+    waitForReady(object, ["name"], function () {
         if (object.name !== undefined) {
             // append a span to the output area, so react can render a card inside it
             var out = document.createElement("span");
             document.querySelector("#output").appendChild(out);
-            cleanups[id] = componentManipulator(object, out, object.name);
-
-            object.onDelete(function () {
-                // remove the card whenever an object gets deleted
-                cleanups[id]();
-            });
+            cleanups[id] = componentManipulator(object, out, object.name + id);
         } else {
             // append a span to the output area, so react can render a card inside it
             var out = document.createElement("span");
             document.querySelector("#output").appendChild(out);
             cleanups[id] = objectManipulator(object, out, "object");
-
-            object.onDelete(function () {
-                // remove the card whenever an object gets deleted
-                cleanups[id]();
-            });
         }
-    }, 15);
+    });
+
+    object.onDelete(function () {
+        console.log("deleting " + id);
+        // remove the card whenever an object gets deleted
+        cleanups[id]();
+    });
 });
 
 var draw = canvasWithSize(500, 500);

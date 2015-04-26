@@ -15,4 +15,4 @@ document.body.appendChild(out);
 
 setInterval(function () {
     out.innerHTML = JSON.stringify(justATestObject, null, 4);
-}, 1/ 60);
+}, 1/60);

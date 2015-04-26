@@ -43,6 +43,10 @@ function assert (condition, message) {
 
 console.log("Started up a remote object server @port " + port + ".");
 
+function isChannelClient(ch) {
+    return theClient && theClient.channel === ch;
+}
+
 function broadcast (message, ch) {
     wss.clients.forEach(function (client) {
         if (ch !== client) {
@@ -85,12 +89,27 @@ wss.on("connection", function (ch) {
         if (decodedMessage.type === "on connection") {
             handleNewConnection(decodedMessage, ch);
         } else {
-            if (ch === theClient.channel) {
+            if (isChannelClient(ch)) {
                 // keep a history of all messages sent by the client
                 // so remotes can be synchronised
                 theClient.history.push(message);
             }
+
             broadcast(message, ch);
+        }
+    });
+
+    ch.on("close", function () {
+        if (isChannelClient(ch)) {
+            // when the client disconnects, "theClient" can be cleaned up
+            console.log("client disconnected");
+            theClient = {
+                channel: undefined,
+                history: []
+            };
+        } else {
+            // nothing needs to happen when a remote disconnects.
+            console.log("remote disconnected");
         }
     });
 });
