@@ -5,7 +5,7 @@ var createRemoteObject = remoteObject.client("ws://localhost:8080");
 
 // this is the remote equivalent of
 // var justATestObject = Object.create(null);
-var justATestObject = createRemoteObject("test");
+var justATestObject = createRemoteObject();
 
 // justATestObject.a = 15;
 justATestObject.set("a", 15);

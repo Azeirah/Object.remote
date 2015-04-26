@@ -119,7 +119,8 @@ function onPointDeletion(object, id) {
 }
 
 remote.listenForCreation(function (object, id) {
-    // this timeout is necessary right now, but necessity will be removed in a later version.
+    // Because object updates are sent -after- object creation, this object is initially empty
+    // by waiting 15 milliseconds, you ensure that the whole object has been received.
     window.setTimeout(function () {
         console.log("new object received!");
         // check if it's a point
@@ -133,4 +134,3 @@ remote.listenForCreation(function (object, id) {
 ```
 
 ## What problems does Object.remote have?
-
