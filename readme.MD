@@ -1,17 +1,20 @@
-# Object.remote
+# remoteObject
 
-Normally, an object exists only on one webpage. Object.remote allows you to clone these objects onto other webpages. Manipulating them on one page, manipulates the same one on another. This is a very powerful but simple abstraction over websockets and objects. It allows for very interesting things in the fields of run-time program visualization, easily building of remote control pages for UI's and games, debugging, and more!
+Normally, an object exists only on one webpage. remoteObject allows you to clone these objects onto other webpages. Manipulating them on one page, manipulates the same one on another. This is a very powerful but simple abstraction over websockets and objects. It allows for very interesting things in the fields of run-time program visualization, easily building of remote control pages for UI's and games, debugging, and more!
 
 A primary example of what this library allows you to do can be found in remotes/basic/remote.html, refer to the quick-start guide below to use it yourself. It's an interface that allows to edit objects similarly to browser developer tools, *however*, it's completely unobtrusive by being on a remote webpage.
 
 ![Image of the demo running][demo]
 
-Object.remote is developed to solve some problems:
+## What problems does remoteObject solve?
+
+remoteObject is developed to solve some problems:
+
 1. Sometimes, you need to quickly prototype an interface, but you don't want to clutter whatever's already there. You can use this to build a remote interface, which will work equally well
 2. While DAT.gui is useful, it quickly becomes too large and annoying to work with when a program gets past the toy phase.
 3. Developer tools are nice to work with but they lack a bigger overview of "what objects exist" and "how do they behave".
 
-# How does Object.remote solve these problems?
+## How does remoteObject solve these problems?
 
 1. Because objects are remote by default, you can build an interface using any library you want to use. Instead of cluttering your application, it runs on a separate webpage, so your original interface remains unchanged.
 2. There is a general-purpose interface available with functionality similar to DAT.gui. Instead of running in a small dropdown at the top-right of your window, it runs as a standalone fullscreen webpage.
@@ -50,7 +53,7 @@ Check out the examples for now. I don't have a remote server enabled yet..
 
 ## Applications
 
-So, what's this for? Object.remote can be used for many things, here are some examples. It's really a matter of creativity.
+So, what's this for? remoteObject can be used for many things, here are some examples. It's really a matter of creativity.
 
 1. Building a remote UI for games, ever wanted to build a game that could be controlled simultaneously by the mouse and touch on the smartphone? Easy!
 2. It allows for building remote interfaces to edit pieces of code that aren't best edited in text. Imagine a bezier curve editor at run-time, so you can really feel your way into getting the right animation.
@@ -59,13 +62,13 @@ So, what's this for? Object.remote can be used for many things, here are some ex
 5. Real-time profiling and visualization.
 6. Real-time manipulation of arbitrary objects (check out martijnbrekelmans.com/game with the remote.html in the example directory).
 
-All in all, Object.remote has a wide use-case.
+All in all, remoteObject has a wide use-case.
 
 ## How does it work?
 
-Object.remote consists of three things
+remoteObject consists of three things
 
-1. The client, this is a single page using the Object.remote JavaScript file
+1. The client, this is a single page using the remoteObject JavaScript file
 2. Any number of remote client pages, we'll call these remotes, these are pages that can receive the Objects created in the client, and then visualize, manage and interact with them.
 3. The remote object server, this is a very simple websocket server that passes any messages it gets to all its connections, except to the one it received the message from
 
