@@ -1,4 +1,5 @@
-var port            = 8080;
+#!/usr/bin/env node
+var port            = process.argv[2] || 8080;
 var WebSocketServer = require('ws').Server;
 var wss             = new WebSocketServer({port: port});
 var clients         = {};

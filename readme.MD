@@ -1,10 +1,10 @@
 # Object.remote
 
-A remote object is an ordinary object that can be viewed and altered by remote web pages, such as mobile phones, laptops, pc's and other tabs on your computer.
+Normally, an object exists only on one webpage. Object.remote allows you to clone these objects onto other webpages. Manipulating them on one page, manipulates the same one on another. This is a very powerful but simple abstraction over websockets and objects. It allows for very interesting things in the fields of run-time program visualization, easily building of remote control pages for UI's and games, debugging, and more!
 
-It can be used to develop control panels for any kind of application or game.
+A primary example of what this library allows you to do can be found in remotes/basic/remote.html, refer to the quick-start guide below to use it yourself. It's an interface that allows to edit objects similarly to browser developer tools, *however*, it's completely unobtrusive by being on a remote webpage.
 
-This project comes with an object editor similar to any modern browser's developer tools but with a nicer interface! I've also included plotting of arbitrary numbers.
+![Image of the demo running][demo]
 
 Object.remote is developed to solve some problems:
 1. Sometimes, you need to quickly prototype an interface, but you don't want to clutter whatever's already there. You can use this to build a remote interface, which will work equally well
@@ -16,7 +16,33 @@ Object.remote is developed to solve some problems:
 1. Because objects are remote by default, you can build an interface using any library you want to use. Instead of cluttering your application, it runs on a separate webpage, so your original interface remains unchanged.
 2. There is a general-purpose interface available with functionality similar to DAT.gui. Instead of running in a small dropdown at the top-right of your window, it runs as a standalone fullscreen webpage.
 3. The general-purpose interface was built around utilizing the screen space of a whole page, instead of being limited to being a part of your webpage as the console is.
-## Demo-time, wooh!
+
+## Quick-start guide
+
+Remote objects require a server and at least two connected webpages.
+
+First, install the server's required package, ws
+
+```bash
+$ npm install
+```
+
+Then, start the server.
+
+```bash
+$ node remoteObjectServer 8080
+Started up a remote object server @port 8080.
+```
+
+### *I want to use this in my project!*
+
+If you want to build your own remote JavaScript control ui's, or want to try out the automatic object visualizer for your own project,
+check out the within the clients and remotes directories. You can also refer to the client and remote api down below.
+
+#### or...
+### *Just show me a demo already*
+
+Open /basic/remote.html in any browser, and follow the instructions provided there.
 
 ## Examples
 
@@ -26,9 +52,9 @@ Check out the examples for now. I don't have a remote server enabled yet..
 
 So, what's this for? Object.remote can be used for many things, here are some examples. It's really a matter of creativity.
 
-1. Building remote controls for games
-2. It allows for building remote interfaces to edit pieces of code that don't represent their behavior in text. Imagine a bezier curve editor at run-time, so you can really feel your way into getting the right animation.
-3. It can be used as an abstraction over websockets
+1. Building a remote UI for games, ever wanted to build a game that could be controlled simultaneously by the mouse and touch on the smartphone? Easy!
+2. It allows for building remote interfaces to edit pieces of code that aren't best edited in text. Imagine a bezier curve editor at run-time, so you can really feel your way into getting the right animation.
+3. It can be used as a fairly general purpose abstraction over websockets
 4. Plotting data over time
 5. Real-time profiling and visualization.
 6. Real-time manipulation of arbitrary objects (check out martijnbrekelmans.com/game with the remote.html in the example directory).
@@ -99,8 +125,6 @@ circle.remove();
 
 ## Remote api
 
-This is code taken from the point example.
-
 ```js
 var remoteObjectServer = "ws://localhost:8080";
 var remote = remoteObject.remote(remoteObjectServer);
@@ -119,18 +143,18 @@ function onPointDeletion(object, id) {
 }
 
 remote.listenForCreation(function (object, id) {
-    // Because object updates are sent -after- object creation, this object is initially empty
-    // by waiting 15 milliseconds, you ensure that the whole object has been received.
-    window.setTimeout(function () {
-        console.log("new object received!");
-        // check if it's a point
-        if (object.x && object.y) {
-            newPoint(object, id);
-            object.onUpdate(onPointUpdate);
-            object.onDelete(onPointDeletion);
-        }
-    }, 15);
+    console.log("new object received!");
+    // note, listenForCreation only receives empty objects, the properties of the object get set immediately after this call
+    // This will be resolved in a later update, when I find a decent solution to duck-typing objects without parameters
+    // right now, you'll have to hack together something yourself like waitForReady defined in remotes/basic/js/remote.js
+    waitForReady(object, ["x", "y"], function () {
+      // object is ready
+      newPoint(object, id);
+      object.onUpdate(onPointUpdate);
+      object.onDelete(onPointDeletion);
+    });
 });
 ```
 
-## What problems does Object.remote have?
+
+[demo]: RemoteExample.png
