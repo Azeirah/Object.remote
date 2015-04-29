@@ -38,7 +38,7 @@
     cursor: pointer;
 }
 
-.something {
+.manipulator, .something {
     margin: 8px;
     padding: 8px;
     font-family: verdana;

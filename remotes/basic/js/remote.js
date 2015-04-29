@@ -2,35 +2,43 @@ var remote = remoteObject.remote("ws://localhost:8080");
 // hold references to cleanup functions to react elements, look in objectManipulator.js to see that component&objectManipulator return functions which are used to clean themselves up.
 var cleanups = {};
 
-function waitForReady(object, keys, onReady) {
+function waitForReady(object, keys, callbacks) {
     var receivedKeys = [];
-    var timeout;
+    var failureTimer;
 
+    // this part checks if the object DOES have the found keys
     object.onUpdate(function (o, key) {
         keys.forEach(function (thisKey) {
             if (key === thisKey && receivedKeys.indexOf(thisKey) < 0) {
                 receivedKeys.push(thisKey);
                 if (receivedKeys.length === keys.length) {
-                    onReady(object);
+                    callbacks.doesHave(object);
+                    window.clearTimeout(failureTimer);
                 }
             }
         });
     });
+
+    // if it doesn't, call doesntHave
+    failureTimer = window.setTimeout(function () {
+        callbacks.doesntHave(object);
+    }, 25);
 }
 
 remote.listenForCreation(function (object, id) {
-    waitForReady(object, ["name"], function () {
-        if (object.name !== undefined) {
-            // append a span to the output area, so react can render a card inside it
-            var out = document.createElement("span");
-            document.querySelector("#output").appendChild(out);
-            cleanups[id] = componentManipulator(object, out, object.name + id);
-        } else {
-            // append a span to the output area, so react can render a card inside it
-            var out = document.createElement("span");
-            document.querySelector("#output").appendChild(out);
-            cleanups[id] = objectManipulator(object, out, "object");
-        }
+    waitForReady(object, ["name"], {
+      doesHave: function () {
+        // append a span to the output area, so react can render a card inside it
+        var out = document.createElement("span");
+        document.querySelector("#output").appendChild(out);
+        cleanups[id] = componentManipulator(object, out, object.name + id);
+      },
+      doesntHave: function () {
+        // append a span to the output area, so react can render a card inside it
+        var out = document.createElement("span");
+        document.querySelector("#output").appendChild(out);
+        cleanups[id] = objectManipulator(object, out, "object");
+      }
     });
 
     object.onDelete(function () {
@@ -39,6 +47,9 @@ remote.listenForCreation(function (object, id) {
         cleanups[id]();
     });
 });
+
+// Everything below is for graphing, it's not in the readme, but by clicking on a number while holding the g for graph key
+// numbers will be graphed in real-time.
 
 var draw = canvasWithSize(500, 500);
 var ctx = draw.ctx;
