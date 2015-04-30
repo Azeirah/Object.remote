@@ -1,4 +1,14 @@
-var remote = remoteObject.remote("ws://localhost:8080");
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? undefined : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+var server = getParameterByName("server") || "ws://localhost:8080";
+console.log("the server is ", server);
+
+var remote = remoteObject.remote(server);
 // hold references to cleanup functions to react elements, look in objectManipulator.js to see that component&objectManipulator return functions which are used to clean themselves up.
 var cleanups = {};
 
