@@ -119,18 +119,11 @@ function onPointDeletion(object, id) {
 }
 
 remote.listenForCreation(function (object, id) {
-    // Because object updates are sent -after- object creation, this object is initially empty
-    // by waiting 15 milliseconds, you ensure that the whole object has been received.
-    window.setTimeout(function () {
-        console.log("new object received!");
-        // check if it's a point
-        if (object.x && object.y) {
-            newPoint(object, id);
-            object.onUpdate(onPointUpdate);
-            object.onDelete(onPointDeletion);
-        }
-    }, 15);
+	// this assumes that the received object is a point
+	// to be sure it's a point, use duck-typing like in remotes/basic/js/remote.js
+   	newPoint(object, id);
+
+   	object.onUpdate(onPointUpdate);
+   	object.onDelete(onPointDeletion);
 });
 ```
-
-## What problems does Object.remote have?
