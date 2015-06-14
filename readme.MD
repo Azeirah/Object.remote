@@ -161,3 +161,12 @@ remote.listenForCreation(function (object, id) {
 
 
 [demo]: RemoteExample.png
+=======
+	// this assumes that the received object is a point
+	// to be sure it's a point, use duck-typing like in remotes/basic/js/remote.js
+   	newPoint(object, id);
+
+   	object.onUpdate(onPointUpdate);
+   	object.onDelete(onPointDeletion);
+});
+```
